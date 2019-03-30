@@ -1,9 +1,27 @@
 #include "fileHandler.h"
 
+#define HASHING true
+
+#if HASHING // Using https://github.com/vog/sha1
+#include "..\sha1\sha1.hpp"
+#endif
+
+#include <vector>
+
+using std::vector;
+using std::string;
+using std::cout;
+using std::cerr;
+
+#define KB (int)1024
+#define MB (int)1024*1024
+
+#define chunksize (2 * KB)
+
 int main(int argc, char** argv)
 {
-#if DEBUG == true
-	cout << "DEBUG: We are currently in path" << endl << "DEBUG: ";
+
+	cout << "We are currently in path" << endl;
 
 	#ifdef _WIN32
 		system("cd");
@@ -13,32 +31,88 @@ int main(int argc, char** argv)
 		system("pwd");
 	#endif //__unix__
 
-		cout << endl << endl;
-#endif // DEBUG
+	cout << endl << endl;
 
 	// Init the file handler class
 	fileHandler test("TestFile.test");
+		
+	cout << "Fetch for chunk 0 has started on init" << endl << endl;
 
-	// Looped the chunk reading for some examples
-	for (int i = 0; i < 3; i++)
+#if HASHING // Init the vars
+	SHA1 verifyContents;
+	vector<string> keepingHashes;
+#endif // HASHING
+
+
+	for (double i = 1; i < test.getTotalChunks(); i++)
 	{
-		test.readNextChunk();
-		cout << "Chunk No " << i << ":" << test.buffer << endl;
+		test.waitForRead();
+
+#if HASHING // Don't need to see both every time
+		cout << "Hashing current chunk" << endl;
+		verifyContents.update(test.buffer);
+		keepingHashes.push_back(verifyContents.final());
+#elif
+		cout << test.buffer;
+#endif
+
+		// Lets check the next one
+		test.asyncReadNextChunk();
+		cout << "We're on chunk " << i << endl;
 	}
-	
+
 	// reseting the pointer to the start of the file
 	test.resetPointer();
+	
+	long nextChunk = 2;
+
+	cout << "Setting next chunk to " << nextChunk << endl;
 
 	// setting the chunk to one in
-	if (!test.setCurrChunkNo(1))
+	if (!test.setNextChunkNo(nextChunk))
 	{
 		cerr << "That didn't work as planned";
 		return 1;
 	}
 
-	// reading that chunk and writing to console
-	test.readNextChunk();
-	cout << "Chunk No 1:" << test.buffer << endl;
+	test.asyncReadNextChunk();
+
+	test.waitForRead();
+
+#if HASHING // Don't need to see both every time
+	cout << "Hashing Repeated Chunk No: " << nextChunk << endl;
+	verifyContents.update(test.buffer);
+	keepingHashes.push_back(verifyContents.final());
+
+	cout << (keepingHashes.back() == keepingHashes[nextChunk] ? "true" : "false");
+#elif
+	cout << test.buffer;
+#endif
+
+	nextChunk += 20;
+
+	cout << endl << "Setting next chunk to " << nextChunk << endl;
+
+	// setting the chunk to one in
+	if (!test.setNextChunkNo(nextChunk))
+	{
+		cerr << "That didn't work as planned";
+		return 1;
+	}
+
+	test.asyncReadNextChunk();
+
+	test.waitForRead();
+
+#if HASHING // Don't need to see both every time
+	cout << endl << "Hashing Repeated Chunk No: " << nextChunk << endl;
+	verifyContents.update(test.buffer);
+	keepingHashes.push_back(verifyContents.final());
+
+	cout << (keepingHashes.back() == keepingHashes[nextChunk] ? "true" : "false");
+#elif
+	cout << test.buffer;
+#endif
 
 	return 0;
 }

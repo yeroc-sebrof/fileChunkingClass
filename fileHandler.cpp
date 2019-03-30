@@ -14,8 +14,8 @@ fileHandler::fileHandler(string fileNameGiven, size_t currChunkSize)
 	// Checking the file opened worked before setting buffers in the event an error occurs
 	if (fileToCarve == NULL) // If file didn't open
 	{
-		cerr << "File Error with: " << fileName << endl
-			 << "Does this file exitst here?" << endl;
+		cerr << "FileHandler: Error with: " << fileName << endl
+			 << "Does this file exist here?" << endl;
 
 	#if defined(_WIN32)
 		system("cd");
@@ -34,12 +34,12 @@ fileHandler::fileHandler(string fileNameGiven, size_t currChunkSize)
 	buffer = (char*)malloc(sizeof(char)*chunkSize);
 	if (buffer == NULL)
 	{
-		cerr << "Memory Allocation Error for chunks of size " << chunkSize << "Bytes";
+		cerr << "FileHandler: Memory Allocation Error for chunks of size " << chunkSize << "Bytes";
 		exit(2);
 	}
 
 	// Good to have handy in a variable
-	totalChunks = ceil(fSize/chunkSize);
+	totalChunks = ceil((double)fSize/chunkSize);
 	// Remainder is still a chunk. Just the GPU's problem of how to propogate that throughout
 
 	readFirstChunk();
@@ -47,6 +47,7 @@ fileHandler::fileHandler(string fileNameGiven, size_t currChunkSize)
 	return;
 }
 
+// Checks and Error Handling
 long fileHandler::checkFileSize()
 {
 	rewind(fileToCarve);
@@ -54,12 +55,24 @@ long fileHandler::checkFileSize()
 	fSize = ftell(fileToCarve);
 
 	#if DEBUG == true
-	cerr << fileName << " is of size: " << fSize << " Bytes" << endl << endl;
+	cout << "FileHandler: " <<  fileName << " is of size: " << fSize << " Bytes" << endl << endl;
 	#endif 
 
 	rewind(fileToCarve);
 	currChunk = 0;
 	return fSize;
+}
+
+void fileHandler::confirmFileSize()
+{
+	long fileSizeBefore = fSize;
+
+	if (fileSizeBefore != checkFileSize())
+	{
+		cerr << "FileHandler: The file has been altered in some way. This is not the file from before; exiting";
+		free(buffer); // To be safe
+		exit(3);
+	}
 }
 
 void fileHandler::resetPointer()
@@ -70,26 +83,7 @@ void fileHandler::resetPointer()
 	return;
 }
 
-void fileHandler::confirmFileSize()
-{
-	long fileSizeBefore = fSize;
-
-	if (fileSizeBefore != checkFileSize())
-	{
-		cerr << "The file has been altered in some way. This is not the file from before; exiting";
-		free(buffer); // To be safe
-		exit(3);
-	}
-}
-
-// Legacy method made redundant with async
-void fileHandler::readNextChunk()
-{
-	fread(buffer, chunkSize, 1, fileToCarve);
-	currChunk++;
-	return;
-}
-
+// Chunk Handling
 void fileHandler::readFirstChunk()
 {
 	asyncReadNextChunk();
@@ -97,17 +91,51 @@ void fileHandler::readFirstChunk()
 	return;
 }
 
-void fileHandler::asyncReadNextChunk()
-{
-	if (asyncThread.joinable())
-		asyncThread.join();
-	
-	asyncThread = thread(fread, buffer, chunkSize, 1, fileToCarve);
+void fileHandler::readNextChunk()
+{ // This method should be called asyncrously
+	unique_lock<mutex> localLock(m);
+	cout << "\nFileHandler: Next Chunk Read started\n";
+
+	fread(buffer, chunkSize, 1, fileToCarve);
+
 	currChunk++;
+	fetched = true;
+	cout << "\nFileHandler: Chunk No " << currChunk << " Loaded into RAM\n";
 	return;
 }
 
-double fileHandler::getTotalChunks()
+void fileHandler::asyncReadNextChunk()
+{
+	// Confirm any previous reads have finished
+	if (asyncThread.joinable())
+		asyncThread.join();
+	
+	// Flag on main that we do not have the new buffer
+	fetched = false;
+	
+	// Start the next read
+	asyncThread = thread(fread, buffer, chunkSize, 1, fileToCarve);
+	return;
+}
+
+// Async Wait -- This shouldn't be needed unless threads can be retasked without being joined
+void fileHandler::waitForRead()
+{
+	if (!fetched) // We must wait for fetch to complete before we can continue
+	{
+		cout << "\nFileHandler: Waiting for read to complete\n";
+		if (asyncThread.joinable())
+			asyncThread.join();
+
+		else // This shouldn't be met but if it is then we should be safe anyway
+			fetched = true;
+	}
+	
+	return;
+}
+
+// Getters and Setters
+long fileHandler::getTotalChunks()
 {
 	return totalChunks;
 }
@@ -117,9 +145,10 @@ long fileHandler::getCurrChunkNo()
 	return currChunk;
 }
 
-bool fileHandler::setCurrChunkNo(long newChunkNo)
+
+bool fileHandler::setNextChunkNo(long newChunkNo)
 {
-	if (newChunkNo >= getTotalChunks())
+	if (!(newChunkNo < getTotalChunks()))
 	{
 		return false;
 	}
@@ -130,7 +159,7 @@ bool fileHandler::setCurrChunkNo(long newChunkNo)
 		currChunk = newChunkNo;
 	} else { // If the file was not repointed correctly
 		
-		cerr << "There was an issue repointing to position " << newChunkNo <<
+		cerr << "FileHandler: There was an issue repointing to position " << newChunkNo <<
 			" the pointer was reset to the start as a result and execution has continued" << endl;
 		resetPointer();
 		return false;
@@ -143,5 +172,9 @@ bool fileHandler::setCurrChunkNo(long newChunkNo)
 fileHandler::~fileHandler()
 {
 	free(buffer);
+	
+	if (asyncThread.joinable())
+		asyncThread.join();
+
 	return;
 }
