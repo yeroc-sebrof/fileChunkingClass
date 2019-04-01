@@ -48,7 +48,7 @@ fileHandler::fileHandler(string fileNameGiven, size_t currChunkSize)
 }
 
 // Checks and Error Handling
-long fileHandler::checkFileSize()
+unsigned long long int fileHandler::checkFileSize()
 {
 	rewind(fileToCarve);
 	fseek(fileToCarve, 0, SEEK_END);
@@ -135,12 +135,12 @@ void fileHandler::waitForRead()
 }
 
 // Getters and Setters
-long fileHandler::getTotalChunks()
+unsigned long int fileHandler::getTotalChunks()
 {
 	return totalChunks;
 }
 
-long fileHandler::getCurrChunkNo()
+unsigned long int fileHandler::getCurrChunkNo()
 {
 	return currChunk;
 }

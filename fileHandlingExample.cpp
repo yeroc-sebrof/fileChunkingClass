@@ -44,7 +44,7 @@ int main(int argc, char** argv)
 #endif // HASHING
 
 
-	for (double i = 1; i < test.getTotalChunks(); i++)
+	for (unsigned long int i = 1; i < test.getTotalChunks(); i++)
 	{
 		test.waitForRead();
 
@@ -62,9 +62,9 @@ int main(int argc, char** argv)
 	}
 
 	// reseting the pointer to the start of the file
-	test.resetPointer();
+	test.readFirstChunk();
 	
-	long nextChunk = 2;
+	unsigned long int nextChunk = 2;
 
 	cout << "Setting next chunk to " << nextChunk << endl;
 
