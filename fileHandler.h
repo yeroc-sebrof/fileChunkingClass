@@ -1,6 +1,5 @@
 #pragma once
 #include <cstdio>
-#include <math.h>
 #include <iostream>
 #include <vector>
 #include <string>
@@ -36,12 +35,12 @@ class fileHandler
 
 	// For async tasking
 	thread asyncThread;
-	bool fetched = true;
 
 	// Methods that don't need to be seen
 	void resetPointer();	// return the file pointer to zero
 	void readNextChunk();		// reads currChunkNo into buffer and increments the counter
 	unsigned long long int checkFileSize();	// rerun the file size check
+	void totalChunkCheck();
 public:
 	mutex m; // This mutex should ensure safety when handling buffer
 	char *buffer; // The current block of data read from the file

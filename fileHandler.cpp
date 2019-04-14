@@ -39,11 +39,21 @@ fileHandler::fileHandler(string fileNameGiven, size_t currChunkSize)
 	}
 
 	// Good to have handy in a variable
-	totalChunks = ceil((double)fSize/chunkSize);
-	// Remainder is still a chunk. Just the GPU's problem of how to propogate that throughout
+	totalChunkCheck();
 
 	readFirstChunk();
 
+	return;
+}
+
+void fileHandler::totalChunkCheck()
+{
+	totalChunks = fSize / chunkSize;
+
+	// Remainder is still a chunk. Just the GPU's problem of how to propogate that throughout
+	if (fSize % chunkSize)
+		totalChunks++;
+	
 	return;
 }
 
@@ -99,7 +109,6 @@ void fileHandler::readNextChunk()
 	fread(buffer, chunkSize, 1, fileToCarve);
 
 	currChunk++;
-	fetched = true;
 	cout << "\nFileHandler: Chunk No " << currChunk << " Loaded into RAM\n";
 	return;
 }
@@ -111,24 +120,19 @@ void fileHandler::asyncReadNextChunk()
 		asyncThread.join();
 	
 	// Flag on main that we do not have the new buffer
-	fetched = false;
 	
 	// Start the next read
 	asyncThread = thread(fread, buffer, chunkSize, 1, fileToCarve);
 	return;
 }
 
-// Async Wait -- This shouldn't be needed unless threads can be retasked without being joined
+// Async Wait
 void fileHandler::waitForRead()
 {
-	if (!fetched) // We must wait for fetch to complete before we can continue
+	if (asyncThread.joinable())
 	{
 		cout << "\nFileHandler: Waiting for read to complete\n";
-		if (asyncThread.joinable())
-			asyncThread.join();
-
-		else // This shouldn't be met but if it is then we should be safe anyway
-			fetched = true;
+		asyncThread.join();
 	}
 	
 	return;
