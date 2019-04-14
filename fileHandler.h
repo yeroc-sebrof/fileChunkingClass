@@ -35,6 +35,7 @@ class fileHandler
 
 	// For async tasking
 	thread asyncThread;
+	bool fetched = true;
 
 	// Methods that don't need to be seen
 	void resetPointer();	// return the file pointer to zero
@@ -59,6 +60,6 @@ public:
 	unsigned long int getTotalChunks();	// returns the file size / chunk size rounded up
 	unsigned long int getCurrChunkNo();	// returns the int value of ChunkNo
 
-	bool setNextChunkNo(long);	// sets the next chunk to be read (Chunks start at 0)
+	bool setNextChunkNo(unsigned long int);	// sets the next chunk to be read (Chunks start at 0)
 };
 

@@ -75,7 +75,7 @@ unsigned long long int fileHandler::checkFileSize()
 
 void fileHandler::confirmFileSize()
 {
-	long fileSizeBefore = fSize;
+	unsigned long long fileSizeBefore = fSize;
 
 	if (fileSizeBefore != checkFileSize())
 	{
@@ -109,7 +109,9 @@ void fileHandler::readNextChunk()
 	fread(buffer, chunkSize, 1, fileToCarve);
 
 	currChunk++;
-	cout << "\nFileHandler: Chunk No " << currChunk << " Loaded into RAM\n";
+
+	cout << "\nFileHandler: Chunk No " << currChunk + 1 << " Loaded out of " << totalChunks << endl;
+
 	return;
 }
 
@@ -123,6 +125,7 @@ void fileHandler::asyncReadNextChunk()
 	
 	// Start the next read
 	asyncThread = thread(fread, buffer, chunkSize, 1, fileToCarve);
+	currChunk++;
 	return;
 }
 
@@ -150,7 +153,7 @@ unsigned long int fileHandler::getCurrChunkNo()
 }
 
 
-bool fileHandler::setNextChunkNo(long newChunkNo)
+bool fileHandler::setNextChunkNo(unsigned long int newChunkNo)
 {
 	if (!(newChunkNo < getTotalChunks()))
 	{
