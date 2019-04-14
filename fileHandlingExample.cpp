@@ -109,7 +109,7 @@ int main(int argc, char** argv)
 	verifyContents.update(test.buffer);
 	keepingHashes.push_back(verifyContents.final());
 
-	cout << (keepingHashes.back() == keepingHashes[nextChunk] ? "true" : "false");
+	cout << (keepingHashes.back() == keepingHashes[nextChunk] ? "true\n" : "false\n");
 #elif
 	cout << test.buffer;
 #endif
