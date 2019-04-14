@@ -42,7 +42,7 @@ fileHandler::fileHandler(string fileNameGiven, size_t currChunkSize)
 	totalChunks = ceil((double)fSize/chunkSize);
 	// Remainder is still a chunk. Just the GPU's problem of how to propogate that throughout
 
-	readFirstChunk();
+	//readFirstChunk();
 
 	return;
 }
@@ -65,7 +65,7 @@ unsigned long long int fileHandler::checkFileSize()
 
 void fileHandler::confirmFileSize()
 {
-	long fileSizeBefore = fSize;
+	unsigned long long fileSizeBefore = fSize;
 
 	if (fileSizeBefore != checkFileSize())
 	{
@@ -100,7 +100,7 @@ void fileHandler::readNextChunk()
 
 	currChunk++;
 	fetched = true;
-	cout << "\nFileHandler: Chunk No " << currChunk << " Loaded into RAM\n";
+	cout << "\nFileHandler: Chunk No " << currChunk + 1 << " Loaded out of " << totalChunks << endl;
 	return;
 }
 
@@ -115,6 +115,7 @@ void fileHandler::asyncReadNextChunk()
 	
 	// Start the next read
 	asyncThread = thread(fread, buffer, chunkSize, 1, fileToCarve);
+	currChunk++;
 	return;
 }
 
@@ -146,7 +147,7 @@ unsigned long int fileHandler::getCurrChunkNo()
 }
 
 
-bool fileHandler::setNextChunkNo(long newChunkNo)
+bool fileHandler::setNextChunkNo(unsigned long int newChunkNo)
 {
 	if (!(newChunkNo < getTotalChunks()))
 	{

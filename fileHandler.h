@@ -10,8 +10,8 @@
 
 #define endl (string)"\n"
 
-#define KB (int)1024
-#define MB (int)1024*1024
+#define KB (unsigned int)1024
+#define MB (unsigned int)1024*1024
 
 #define DEBUG true
 #define CLIARGS false
@@ -27,7 +27,7 @@ using std::unique_lock;
 class fileHandler
 {
 	FILE * fileToCarve; // File pointer
-	size_t chunkSize;
+	unsigned long int chunkSize;
 	string fileName;
 
 	unsigned long int currChunk=0;
@@ -60,6 +60,6 @@ public:
 	unsigned long int getTotalChunks();	// returns the file size / chunk size rounded up
 	unsigned long int getCurrChunkNo();	// returns the int value of ChunkNo
 
-	bool setNextChunkNo(long);	// sets the next chunk to be read (Chunks start at 0)
+	bool setNextChunkNo(unsigned long int);	// sets the next chunk to be read (Chunks start at 0)
 };
 
