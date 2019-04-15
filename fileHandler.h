@@ -9,8 +9,8 @@
 
 #define endl (string)"\n"
 
-#define KB (int)1024
-#define MB (int)1024*1024
+#define KB (unsigned long int)1024
+#define MB (unsigned long int)1024*1024
 
 #define DEBUG true
 #define CLIARGS false
