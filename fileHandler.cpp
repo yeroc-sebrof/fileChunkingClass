@@ -123,11 +123,9 @@ void fileHandler::asyncReadNextChunk()
 	if (asyncThread.joinable())
 		asyncThread.join();
 	
-	// Flag on main that we do not have the new buffer
-	
 	// Start the next read
-	asyncThread = thread(fread, buffer, chunkSize, 1, fileToCarve);
 	currChunk++;
+	asyncThread = thread(fread, buffer, chunkSize, 1, fileToCarve);
 	return;
 }
 
