@@ -45,6 +45,7 @@ class fileHandler
 public:
 	mutex m; // This mutex should ensure safety when handling buffer
 	char *buffer; // The current block of data read from the file
+	unsigned long int remainder;
 
 	fileHandler(string filename, size_t=2*MB);
 	virtual ~fileHandler();

@@ -50,8 +50,10 @@ void fileHandler::totalChunkCheck()
 {
 	totalChunks = fSize / chunkSize;
 
+	remainder = fSize % chunkSize;
+
 	// Remainder is still a chunk. Just the GPU's problem of how to propogate that throughout
-	if (fSize % chunkSize)
+	if (remainder)
 		totalChunks++;
 	
 	return;
