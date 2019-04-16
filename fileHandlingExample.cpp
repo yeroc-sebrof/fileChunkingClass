@@ -6,6 +6,7 @@
 #include "..\sha1\sha1.hpp"
 #endif
 
+#include <future>
 #include <vector>
 
 using std::vector;
@@ -16,9 +17,9 @@ using std::cerr;
 #define KB (int)1024
 #define MB (int)1024*1024
 
-#define chunksize (2 * KB)
+#define chunksize (20 * MB)
 
-int main(int argc, char** argv)
+int test1()
 {
 
 	cout << "We are currently in path" << endl;
@@ -34,7 +35,7 @@ int main(int argc, char** argv)
 	cout << endl << endl;
 
 	// Init the file handler class
-	fileHandler test("TestFile.test");
+	fileHandler test("TestFile.test", chunksize);
 		
 	cout << "Fetch for chunk 0 has started on init" << endl << endl;
 
@@ -89,7 +90,7 @@ int main(int argc, char** argv)
 	cout << test.buffer;
 #endif
 
-	nextChunk += 20;
+	nextChunk += 5;
 
 	cout << endl << "Setting next chunk to " << nextChunk << endl;
 
@@ -115,4 +116,46 @@ int main(int argc, char** argv)
 #endif
 
 	return 0;
+}
+
+int test2()
+{
+	fileHandler a("TestFile.test", 210 * MB);
+	fileHandler b("TestFile.test", 21 * MB);
+
+	SHA1 checkera;
+	
+	string holding;
+
+	char* c = new char[210 * MB];
+
+	for (int i = 0; i < b.getTotalChunks(); i++)
+	{
+		b.waitForRead();
+		std::memcpy(&c[i*(21 * MB)], b.buffer, 21 * MB);
+		b.asyncReadNextChunk();
+	}
+
+	std::future<string> test = std::async(std::launch::async, [c] { SHA1 checker; checker.update(c); return checker.final(); });
+
+	checkera.update(a.buffer);
+	
+	cout << test.get() << endl;
+	cout << checkera.final() << endl;
+
+	return 0;
+}
+
+int main(int argc, char** argv)
+{
+	int test;
+
+	//test = test1();
+	
+	//if (!test)
+	//	return test;
+
+	test = test2();
+
+	return test;
 }
