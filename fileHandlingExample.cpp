@@ -14,8 +14,8 @@ using std::string;
 using std::cout;
 using std::cerr;
 
-#define KB (int)1024
-#define MB (int)1024*1024
+#define KB (unsigned long int)1024
+#define MB (unsigned long int)1024*1024
 
 #define chunksize (20 * MB)
 
@@ -129,7 +129,7 @@ int test2()
 
 	char* c = new char[210 * MB];
 
-	for (int i = 0; i < b.getTotalChunks(); i++)
+	for (int i = 0; i < b.getTotalChunks() - 1; i++)
 	{
 		b.waitForRead();
 		std::memcpy(&c[i*(21 * MB)], b.buffer, 21 * MB);
@@ -146,6 +146,46 @@ int test2()
 	return 0;
 }
 
+int test3()
+{
+	int size = 6;
+	int overlaySize = 2;
+
+	fileHandler abc("abcz.txt", size, overlaySize);
+	string qwe;
+
+
+	for (int i = 0; i < abc.getTotalChunks() - 1; i++)
+	{
+		//abc.waitForRead();
+		qwe = abc.buffer;
+		cout << qwe.substr(0, size + overlaySize) << endl;
+		abc.asyncReadNextChunk();
+	}
+
+	qwe = abc.buffer;
+
+	//abc.waitForRead();
+	if (abc.remainder)
+	{
+		if (abc.remainder > overlaySize)
+		{
+			cout << qwe.substr(0, abc.remainder) << endl;
+		}
+		else
+		{
+			cout << "Chunk remainder is too small" << endl;
+		}
+	}
+	else
+	{
+		cout << qwe.substr(0, size + overlaySize) << endl;
+	}
+	
+
+	return 0;
+}
+
 int main(int argc, char** argv)
 {
 	int test;
@@ -155,7 +195,9 @@ int main(int argc, char** argv)
 	//if (!test)
 	//	return test;
 
-	test = test2();
+	//test = test2();
+
+	test = test3();
 
 	return test;
 }

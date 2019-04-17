@@ -33,6 +33,9 @@ class fileHandler
 	unsigned long int totalChunks;
 	unsigned long long int fSize; // File size variable
 
+	char* miniBuff;
+	unsigned short overlay;
+
 	// For async tasking
 	thread asyncThread;
 	bool fetched = true;
@@ -44,17 +47,17 @@ class fileHandler
 	void totalChunkCheck();
 public:
 	mutex m; // This mutex should ensure safety when handling buffer
-	char *buffer; // The current block of data read from the file
+	char* buffer; // The current block of data read from the file
 	unsigned long int remainder;
 
-	fileHandler(string filename, size_t=2*MB);
+	fileHandler(string filename, size_t=2*MB, unsigned short=0);
 	virtual ~fileHandler();
 
 	void confirmFileSize(); // Will check if the file size is equal to the file size given at the start.
 	// This should only change in the event the file has been changed as we use it
 
 	void readFirstChunk();		// Reads first chunk Asyncronously and sets the currentChunkNo
-	void asyncReadNextChunk();	// starts the read of currChunkNo into buffer and increments the counter
+	void asyncReadNextChunk(bool=false);	// starts the read of currChunkNo into buffer and increments the counter
 
 	void waitForRead();
 

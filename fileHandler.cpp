@@ -2,10 +2,11 @@
 
 
 //fileHandler::fileHandler(string fileName, size_t currChunkSize = 20MB)
-fileHandler::fileHandler(string fileNameGiven, size_t currChunkSize)
+fileHandler::fileHandler(string fileNameGiven, size_t currChunkSize, unsigned short overlaySize)
 {
 	fileName = fileNameGiven;  // Set this for the debug messages in future
 	chunkSize = currChunkSize; // By having a default value we can change it easier for testing
+	overlay = overlaySize;
 
 	// Open the file requested and since this is a C method it doesn't like strings just char arrays
 	#pragma warning(suppress : 4996)
@@ -31,7 +32,7 @@ fileHandler::fileHandler(string fileNameGiven, size_t currChunkSize)
 	// Setup buffers - Due to the use of C methods and the size of the file chunks
 	// sticking to the methods demonstrated in the examples seemed the best approach
 	// compared to trying to load the files into CPP char arrays.
-	buffer = (char*)malloc(sizeof(char)*chunkSize);
+	buffer = (char*)malloc(sizeof(char)*(chunkSize+overlay));
 	if (buffer == NULL)
 	{
 		cerr << "FileHandler: Memory Allocation Error for chunks of size " << chunkSize << "Bytes";
@@ -41,6 +42,7 @@ fileHandler::fileHandler(string fileNameGiven, size_t currChunkSize)
 	// Good to have handy in a variable
 	totalChunkCheck();
 
+	miniBuff = new char[overlay];
 	readFirstChunk();
 
 	return;
@@ -98,7 +100,7 @@ void fileHandler::resetPointer()
 // Chunk Handling
 void fileHandler::readFirstChunk()
 {
-	asyncReadNextChunk();
+	asyncReadNextChunk(true);
 	currChunk = 0;
 	return;
 }
@@ -117,7 +119,7 @@ void fileHandler::readNextChunk()
 	return;
 }
 
-void fileHandler::asyncReadNextChunk()
+void fileHandler::asyncReadNextChunk(bool firstChunk)
 {
 	// Confirm any previous reads have finished
 	if (asyncThread.joinable())
@@ -125,7 +127,17 @@ void fileHandler::asyncReadNextChunk()
 	
 	// Start the next read
 	currChunk++;
-	asyncThread = thread(fread, buffer, chunkSize, 1, fileToCarve);
+
+	if (firstChunk)
+	{
+		fread(buffer, chunkSize + overlay, 1, fileToCarve);
+	}
+	else
+	{
+		memcpy(buffer, &buffer[chunkSize], overlay); // Copy end of the buffer to the start of the buffer
+		fread(&buffer[overlay], chunkSize, 1, fileToCarve); // Read after copy
+	}
+
 	return;
 }
 
