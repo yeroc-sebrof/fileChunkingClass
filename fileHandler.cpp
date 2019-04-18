@@ -100,6 +100,7 @@ void fileHandler::resetPointer()
 // Chunk Handling
 void fileHandler::readFirstChunk()
 {
+	rewind(fileToCarve);
 	asyncReadNextChunk(true);
 	currChunk = 0;
 	return;
