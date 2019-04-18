@@ -26,7 +26,7 @@ using std::unique_lock;
 class fileHandler
 {
 	FILE * fileToCarve; // File pointer
-	size_t chunkSize;
+	unsigned long long int chunkSize;
 	string fileName;
 
 	unsigned long int currChunk=0;
@@ -49,7 +49,7 @@ public:
 	char* buffer; // The current block of data read from the file
 	unsigned long int remainder;
 
-	fileHandler(string filename, size_t=2*MB, unsigned short=0);
+	fileHandler(string filename, unsigned long long int= 2*MB, unsigned short=0);
 	virtual ~fileHandler();
 
 	void confirmFileSize(); // Will check if the file size is equal to the file size given at the start.
@@ -62,6 +62,7 @@ public:
 
 	unsigned long int getTotalChunks();	// returns the file size / chunk size rounded up
 	unsigned long int getCurrChunkNo();	// returns the int value of ChunkNo
+	unsigned int getOverlay();
 
 	bool setNextChunkNo(unsigned long int);	// sets the next chunk to be read (Chunks start at 0)
 };

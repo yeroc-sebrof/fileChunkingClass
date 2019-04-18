@@ -2,7 +2,7 @@
 
 
 //fileHandler::fileHandler(string fileName, size_t currChunkSize = 20MB)
-fileHandler::fileHandler(string fileNameGiven, size_t currChunkSize, unsigned short overlaySize)
+fileHandler::fileHandler(string fileNameGiven, unsigned long long int currChunkSize, unsigned short overlaySize)
 {
 	fileName = fileNameGiven;  // Set this for the debug messages in future
 	chunkSize = currChunkSize; // By having a default value we can change it easier for testing
@@ -164,6 +164,10 @@ unsigned long int fileHandler::getCurrChunkNo()
 	return currChunk;
 }
 
+unsigned int fileHandler::getOverlay()
+{
+	return overlay;
+}
 
 bool fileHandler::setNextChunkNo(unsigned long int newChunkNo)
 {
