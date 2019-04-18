@@ -33,7 +33,6 @@ class fileHandler
 	unsigned long int totalChunks;
 	unsigned long long int fSize; // File size variable
 
-	char* miniBuff;
 	unsigned short overlay;
 
 	// For async tasking

@@ -8,6 +8,7 @@ fileHandler::fileHandler(string fileNameGiven, size_t currChunkSize, unsigned sh
 	chunkSize = currChunkSize; // By having a default value we can change it easier for testing
 	overlay = overlaySize;
 
+
 	// Open the file requested and since this is a C method it doesn't like strings just char arrays
 	#pragma warning(suppress : 4996)
 	fileToCarve = fopen(fileName.c_str(), "rb");
@@ -42,7 +43,6 @@ fileHandler::fileHandler(string fileNameGiven, size_t currChunkSize, unsigned sh
 	// Good to have handy in a variable
 	totalChunkCheck();
 
-	miniBuff = new char[overlay];
 	readFirstChunk();
 
 	return;
@@ -50,9 +50,9 @@ fileHandler::fileHandler(string fileNameGiven, size_t currChunkSize, unsigned sh
 
 void fileHandler::totalChunkCheck()
 {
-	totalChunks = fSize / chunkSize;
+	totalChunks = (fSize - overlay) / chunkSize;
 
-	remainder = fSize % chunkSize;
+	remainder = (fSize - overlay) % chunkSize;
 
 	// Remainder is still a chunk. Just the GPU's problem of how to propogate that throughout
 	if (remainder)
@@ -130,12 +130,12 @@ void fileHandler::asyncReadNextChunk(bool firstChunk)
 
 	if (firstChunk)
 	{
-		fread(buffer, chunkSize + overlay, 1, fileToCarve);
+		asyncThread = thread(fread, buffer, chunkSize + overlay, 1, fileToCarve);
 	}
 	else
 	{
 		memcpy(buffer, &buffer[chunkSize], overlay); // Copy end of the buffer to the start of the buffer
-		fread(&buffer[overlay], chunkSize, 1, fileToCarve); // Read after copy
+		asyncThread = thread(fread, &buffer[overlay], chunkSize, 1, fileToCarve); // Read after copy
 	}
 
 	return;
@@ -146,7 +146,7 @@ void fileHandler::waitForRead()
 {
 	if (asyncThread.joinable())
 	{
-		cout << "\nFileHandler: Waiting for read to complete\n";
+		cout << "FileHandler: Waiting for read to complete\n";
 		asyncThread.join();
 	}
 	

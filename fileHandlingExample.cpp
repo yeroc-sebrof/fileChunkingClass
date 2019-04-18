@@ -148,8 +148,11 @@ int test2()
 
 int test3()
 {
-	int size = 6;
+	int size = 7;
 	int overlaySize = 2;
+
+	int patternMax = 6;
+	int patternMin = 4;
 
 	fileHandler abc("abcz.txt", size, overlaySize);
 	string qwe;
@@ -157,7 +160,7 @@ int test3()
 
 	for (int i = 0; i < abc.getTotalChunks() - 1; i++)
 	{
-		//abc.waitForRead();
+		abc.waitForRead();
 		qwe = abc.buffer;
 		cout << qwe.substr(0, size + overlaySize) << endl;
 		abc.asyncReadNextChunk();
@@ -165,12 +168,12 @@ int test3()
 
 	qwe = abc.buffer;
 
-	//abc.waitForRead();
+	abc.waitForRead();
 	if (abc.remainder)
 	{
-		if (abc.remainder > overlaySize)
+		if (abc.remainder + overlaySize >= patternMin)
 		{
-			cout << qwe.substr(0, abc.remainder) << endl;
+			cout << qwe.substr(0, abc.remainder + overlaySize) << endl;
 		}
 		else
 		{
