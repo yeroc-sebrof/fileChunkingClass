@@ -147,7 +147,7 @@ void fileHandler::waitForRead()
 {
 	if (asyncThread.joinable())
 	{
-		cout << "FileHandler: Waiting for read to complete\n";
+		cout << "\nFileHandler: Waiting for read to complete\n";
 		asyncThread.join();
 	}
 	
