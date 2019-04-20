@@ -2,19 +2,20 @@
 
 
 //fileHandler::fileHandler(string fileName, size_t currChunkSize = 20MB)
-fileHandler::fileHandler(string fileNameGiven, unsigned long long int currChunkSize, unsigned short overlaySize)
+fileHandler::fileHandler(string fileNameGiven, fSizeType currChunkSize, unsigned short overlaySize)
 {
 	fileName = fileNameGiven;  // Set this for the debug messages in future
 	chunkSize = currChunkSize; // By having a default value we can change it easier for testing
 	overlay = overlaySize;
 
-
 	// Open the file requested and since this is a C method it doesn't like strings just char arrays
-	#pragma warning(suppress : 4996)
-	fileToCarve = fopen(fileName.c_str(), "rb");
+	//#pragma warning(suppress : 4996)
+	//fileToCarve = fopen(fileName.c_str(), "rb");
+
+	ifile.open(fileName, std::ios::binary);
 
 	// Checking the file opened worked before setting buffers in the event an error occurs
-	if (fileToCarve == NULL) // If file didn't open
+	if (std::ifstream::failbit == ifile.rdstate()) // If file didn't open
 	{
 		cerr << "FileHandler: Error with: " << fileName << endl
 			 << "Does this file exist here?" << endl;
@@ -62,19 +63,19 @@ void fileHandler::totalChunkCheck()
 	return;
 }
 
-// Checks and Error Handling
-unsigned long long int fileHandler::checkFileSize()
+// Checks and Error Handling -- This method is kinda shit as it will reset the pointer but doesn't let anyone know
+fSizeType fileHandler::checkFileSize()
 {
-	rewind(fileToCarve);
-	fseek(fileToCarve, 0, SEEK_END);
-	fSize = ftell(fileToCarve);
+	ifile.seekg(0, ifile.end);//seek to end
+	//now get current position as length of file
+	fSize = ifile.tellg();
 
 	#if DEBUG == true
 	cout << "FileHandler: " <<  fileName << " is of size: " << fSize << " Bytes" << endl << endl;
-	#endif 
+	#endif
 
-	rewind(fileToCarve);
-	currChunk = 0;
+	ifile.seekg(0, ifile.beg);
+
 	return fSize;
 }
 
@@ -92,31 +93,42 @@ void fileHandler::confirmFileSize()
 
 void fileHandler::resetPointer()
 {
-	rewind(fileToCarve);
+	//rewind(fileToCarve);
+	ifile.seekg(0, ifile.beg);
 	currChunk = 0;
-	fread(buffer, chunkSize, 1, fileToCarve);
+	//fread(buffer, chunkSize, 1, fileToCarve);
 	return;
 }
 
 // Chunk Handling
 void fileHandler::readFirstChunk()
 {
-	rewind(fileToCarve);
+	//rewind(fileToCarve);
+	ifile.seekg(0, ifile.beg);
+
 	asyncReadNextChunk(true);
 	currChunk = 0;
 	return;
 }
 
 void fileHandler::readNextChunk()
-{ // This method should be called asyncrously
+{ // This method is deprecated and should be called asyncrously with the next function
 	unique_lock<mutex> localLock(m);
 	cout << "\nFileHandler: Next Chunk Read started\n";
-
-	fread(buffer, chunkSize, 1, fileToCarve);
-
+	
 	currChunk++;
 
+	//fread(buffer, chunkSize, 1, fileToCarve);
+	ifile.read(buffer, chunkSize);
+	
 	cout << "\nFileHandler: Chunk No " << currChunk + 1 << " Loaded out of " << totalChunks << endl;
+
+	return;
+}
+
+void asyncRead(uifstream& fileStream, uchar* buffer, fSizeType chunkSize)
+{
+	fileStream.read(buffer, chunkSize);
 
 	return;
 }
@@ -132,12 +144,13 @@ void fileHandler::asyncReadNextChunk(bool firstChunk)
 
 	if (firstChunk)
 	{
-		asyncThread = thread(fread, buffer, chunkSize + overlay, 1, fileToCarve);
+		fSizeType getLength = chunkSize + overlay;
+		asyncThread = thread(asyncRead, buffer, getLength);
 	}
 	else
 	{
 		memcpy(buffer, &buffer[chunkSize], overlay); // Copy end of the buffer to the start of the buffer
-		asyncThread = thread(fread, &buffer[overlay], chunkSize, 1, fileToCarve); // Read after copy
+		asyncThread = thread(asyncRead, buffer, chunkSize); // Read after copy
 	}
 
 	return;
@@ -179,7 +192,10 @@ bool fileHandler::setNewChunkNo(unsigned long int newChunkNo)
 	}
 
 	// Set the file cursor to the newChunkNo chunks into the file
-	if (EXIT_SUCCESS == fseek(fileToCarve, (newChunkNo*chunkSize), SEEK_SET))
+	//if (EXIT_SUCCESS == fseek(fileToCarve, (newChunkNo*chunkSize), SEEK_SET))
+
+	ifile.seekg(newChunkNo*chunkSize);
+	if (std::ifstream::failbit == ifile.rdstate()) // If the seek was not possible
 	{
 		currChunk = newChunkNo;
 		asyncReadNextChunk(true);
@@ -191,8 +207,6 @@ bool fileHandler::setNewChunkNo(unsigned long int newChunkNo)
 		resetPointer();
 		return false;
 	}
-
-
 
 	return true;
 }
