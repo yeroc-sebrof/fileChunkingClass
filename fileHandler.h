@@ -35,6 +35,12 @@ using std::unique_lock;
 
 #define uifstream std::basic_ifstream<unsigned char>
 
+std::ostream& operator < (std::ostream& os, const std::basic_string<unsigned char>& str) {
+	for (auto ch : str)
+		os << static_cast<char>(ch);
+	return os;
+};
+
 class fileHandler
 {
 	uifstream ifile;
