@@ -171,7 +171,7 @@ unsigned int fileHandler::getOverlay()
 	return overlay;
 }
 
-bool fileHandler::setNextChunkNo(unsigned long int newChunkNo)
+bool fileHandler::setNewChunkNo(unsigned long int newChunkNo)
 {
 	if (!(newChunkNo < getTotalChunks()))
 	{
@@ -179,9 +179,11 @@ bool fileHandler::setNextChunkNo(unsigned long int newChunkNo)
 	}
 
 	// Set the file cursor to the newChunkNo chunks into the file
-	if (EXIT_SUCCESS == fseek(fileToCarve, newChunkNo*chunkSize, SEEK_SET))
+	if (EXIT_SUCCESS == fseek(fileToCarve, (newChunkNo*chunkSize), SEEK_SET))
 	{
 		currChunk = newChunkNo;
+		asyncReadNextChunk(true);
+
 	} else { // If the file was not repointed correctly
 		
 		cerr << "FileHandler: There was an issue repointing to position " << newChunkNo <<
@@ -189,6 +191,8 @@ bool fileHandler::setNextChunkNo(unsigned long int newChunkNo)
 		resetPointer();
 		return false;
 	}
+
+
 
 	return true;
 }

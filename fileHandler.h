@@ -15,6 +15,8 @@
 #define DEBUG true
 #define CLIARGS false
 
+// This was made clearer with https://stackoverflow.com/questions/43095864/using-cout-with-basic-stringunsigned-char
+//						  and https://stackoverflow.com/questions/20294746/strings-of-unsigned-chars
 #define ustring std::basic_string<unsigned char>
 #define uchar unsigned char
 
@@ -68,6 +70,6 @@ public:
 	unsigned long int getCurrChunkNo();	// returns the int value of ChunkNo
 	unsigned int getOverlay();
 
-	bool setNextChunkNo(unsigned long int);	// sets the next chunk to be read (Chunks start at 0)
+	bool setNewChunkNo(unsigned long int);	// sets the next chunk to be read (Chunks start at 0)
 };
 
