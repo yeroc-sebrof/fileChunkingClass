@@ -33,7 +33,7 @@ fileHandler::fileHandler(string fileNameGiven, unsigned long long int currChunkS
 	// Setup buffers - Due to the use of C methods and the size of the file chunks
 	// sticking to the methods demonstrated in the examples seemed the best approach
 	// compared to trying to load the files into CPP char arrays.
-	buffer = (char*)malloc(sizeof(char)*(chunkSize+overlay));
+	buffer = (uchar*)malloc(sizeof(uchar)*(chunkSize+overlay));
 	if (buffer == NULL)
 	{
 		cerr << "FileHandler: Memory Allocation Error for chunks of size " << chunkSize << "Bytes";
@@ -52,6 +52,7 @@ void fileHandler::totalChunkCheck()
 {
 	totalChunks = (fSize - overlay) / chunkSize;
 
+	// When the remainder is the only chunk we need to stop the subtraction
 	remainder = (fSize - overlay) % chunkSize;
 
 	// Remainder is still a chunk. Just the GPU's problem of how to propogate that throughout

@@ -15,6 +15,10 @@
 #define DEBUG true
 #define CLIARGS false
 
+#define ustring std::basic_string<unsigned char>
+#define uchar unsigned char
+
+
 using std::string;
 using std::cout;
 using std::cerr;
@@ -46,7 +50,7 @@ class fileHandler
 	void totalChunkCheck();
 public:
 	mutex m; // This mutex should ensure safety when handling buffer
-	char* buffer; // The current block of data read from the file
+	uchar* buffer; // The current block of data read from the file
 	unsigned long int remainder;
 
 	fileHandler(string filename, unsigned long long int= 2*MB, unsigned short=0);
