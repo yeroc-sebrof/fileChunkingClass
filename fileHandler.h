@@ -1,6 +1,7 @@
 #pragma once
 #include <cstdio>
 #include <iostream>
+#include <fstream>
 #include <vector>
 #include <string>
 #include <thread>
@@ -17,9 +18,9 @@
 
 // This was made clearer with https://stackoverflow.com/questions/43095864/using-cout-with-basic-stringunsigned-char
 //						  and https://stackoverflow.com/questions/20294746/strings-of-unsigned-chars
-#define ustring std::basic_string<unsigned char>
 #define uchar unsigned char
-
+#define ustring std::basic_string<uchar>
+#define ufstream std::basic_fstream<uchar>
 
 using std::string;
 using std::cout;

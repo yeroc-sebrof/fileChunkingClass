@@ -148,44 +148,45 @@ int test1()
 
 int test3()
 {
-	int size = 8;
 	int overlaySize = 2;
 
-	int patternMax = 6;
-	int patternMin = 4;
-
-	fileHandler abc("abcz.txt", size, overlaySize);
-	ustring qwe;
+	fileHandler abc("test3.dd", chunksize, overlaySize);
+	//ustring qwe;
 
 
 	for (int i = 0; i < abc.getTotalChunks() - 1; i++)
 	{
 		abc.waitForRead();
-		qwe = abc.buffer;
-		cout < qwe.substr(0, size + overlaySize);
-		cout << endl;
+		//qwe = abc.buffer;
+		//cout < qwe.substr(0, size + overlaySize);
+		//cout << endl;
 		abc.asyncReadNextChunk();
 	}
 
 	abc.waitForRead();
-	qwe = abc.buffer;
+	//qwe = abc.buffer;
+
 
 	if (abc.remainder)
 	{
-		if (abc.remainder + overlaySize >= patternMin)
-		{
-			cout < qwe.substr(0, abc.remainder + overlaySize);
-			cout << endl;
-		}
-		else
-		{
-			cout << "Chunk remainder is too small" << endl;
-		}
+		//if (abc.remainder + overlaySize >= patternMin)
+		//{
+		//	cout < qwe.substr(0, abc.remainder + overlaySize);
+		//	cout << endl;
+		//}
+		//else
+		//{
+		//	cout << "Chunk remainder is too small" << endl;
+		//}
+
+		cout << endl << abc.remainder << " is the remainder";
 	}
 	else
 	{
-		cout < qwe.substr(0, size + overlaySize);
-		cout << endl;
+		cout << endl << "One last chunk";
+
+		//cout < qwe.substr(0, size + overlaySize);
+		//cout << endl;
 	}
 	
 

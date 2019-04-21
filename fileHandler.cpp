@@ -65,16 +65,18 @@ void fileHandler::totalChunkCheck()
 // Checks and Error Handling
 unsigned long long int fileHandler::checkFileSize()
 {
-	rewind(fileToCarve);
-	fseek(fileToCarve, 0, SEEK_END);
-	fSize = ftell(fileToCarve);
+	ufstream ifile(fileName, std::ios::in | std::ios::binary);
 
-	#if DEBUG == true
-	cout << "FileHandler: " <<  fileName << " is of size: " << fSize << " Bytes" << endl << endl;
-	#endif 
+	ifile.seekg(0, ifile.end);//seek to end
+	//now get current position as length of file
+	fSize = ifile.tellg();
 
-	rewind(fileToCarve);
-	currChunk = 0;
+#if DEBUG == true
+	cout << "FileHandler: " << fileName << " is of size: " << fSize << " Bytes" << endl << endl;
+#endif
+
+	ifile.seekg(0, ifile.beg);
+
 	return fSize;
 }
 
@@ -129,7 +131,7 @@ void fileHandler::asyncReadNextChunk(bool firstChunk)
 	
 	// Start the next read
 	currChunk++;
-
+	cout << endl << "FileHandler: Chunk No " << currChunk << " Started out of " << totalChunks << endl;
 	if (firstChunk)
 	{
 		asyncThread = thread(fread, buffer, chunkSize + overlay, 1, fileToCarve);
@@ -148,8 +150,9 @@ void fileHandler::waitForRead()
 {
 	if (asyncThread.joinable())
 	{
-		cout << "\nFileHandler: Waiting for read to complete\n";
+		cout << endl << "FileHandler: Waiting for read to complete" << endl;
 		asyncThread.join();
+		cout << "Done!" << endl;
 	}
 	
 	return;
