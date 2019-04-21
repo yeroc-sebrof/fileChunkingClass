@@ -126,9 +126,9 @@ void fileHandler::readNextChunk()
 	return;
 }
 
-void asyncRead(uifstream& fileStream, uchar* buffer, fSizeType chunkSize)
+void asyncRead(uifstream* fileStream, uchar* buffer, unsigned long int chunkSize)
 {
-	fileStream.read(buffer, chunkSize);
+	fileStream->read(buffer, chunkSize);
 
 	return;
 }
@@ -144,13 +144,12 @@ void fileHandler::asyncReadNextChunk(bool firstChunk)
 
 	if (firstChunk)
 	{
-		fSizeType getLength = chunkSize + overlay;
-		asyncThread = thread(asyncRead, buffer, getLength);
+		unsigned long int getLength = chunkSize + overlay;
+		asyncThread = thread(asyncRead, &ifile, buffer, getLength);
 	}
 	else
 	{
-		memcpy(buffer, &buffer[chunkSize], overlay); // Copy end of the buffer to the start of the buffer
-		asyncThread = thread(asyncRead, buffer, chunkSize); // Read after copy
+		asyncThread = thread(asyncRead, &ifile, &buffer[overlay], chunkSize); // Read after copy
 	}
 
 	return;
