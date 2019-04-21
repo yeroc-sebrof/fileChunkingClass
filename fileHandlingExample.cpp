@@ -1,6 +1,6 @@
 #include "fileHandler.h"
 
-#define HASHING true
+#define HASHING false
 
 #if HASHING // Using https://github.com/vog/sha1
 #include "..\sha1\sha1.hpp"
@@ -14,10 +14,13 @@ using std::string;
 using std::cout;
 using std::cerr;
 
-#define KB (unsigned long int)1024
-#define MB (unsigned long int)1024*1024
-
 #define chunksize (20 * MB)
+
+std::ostream& operator < (std::ostream& os, const std::basic_string<unsigned char>& str) {
+	for (auto ch : str)
+		os << static_cast<char>(ch);
+	return os;
+};
 
 int test1()
 {
@@ -53,8 +56,6 @@ int test1()
 		cout << "Hashing current chunk" << endl;
 		verifyContents.update(test.buffer);
 		keepingHashes.push_back(verifyContents.final());
-#elif
-		cout << test.buffer;
 #endif
 
 		// Lets check the next one
@@ -70,7 +71,7 @@ int test1()
 	cout << "Setting next chunk to " << nextChunk << endl;
 
 	// setting the chunk to one in
-	if (!test.setNextChunkNo(nextChunk))
+	if (!test.setNewChunkNo(nextChunk))
 	{
 		cerr << "That didn't work as planned";
 		return 1;
@@ -86,8 +87,6 @@ int test1()
 	keepingHashes.push_back(verifyContents.final());
 
 	cout << (keepingHashes.back() == keepingHashes[nextChunk] ? "true" : "false");
-#elif
-	cout << test.buffer;
 #endif
 
 	nextChunk += 5;
@@ -95,7 +94,7 @@ int test1()
 	cout << endl << "Setting next chunk to " << nextChunk << endl;
 
 	// setting the chunk to one in
-	if (!test.setNextChunkNo(nextChunk))
+	if (!test.setNewChunkNo(nextChunk))
 	{
 		cerr << "That didn't work as planned";
 		return 1;
@@ -111,69 +110,71 @@ int test1()
 	keepingHashes.push_back(verifyContents.final());
 
 	cout << (keepingHashes.back() == keepingHashes[nextChunk] ? "true\n" : "false\n");
-#elif
-	cout << test.buffer;
 #endif
 
 	return 0;
 }
 
-int test2()
-{
-	fileHandler a("TestFile.test", 210 * MB);
-	fileHandler b("TestFile.test", 21 * MB);
-
-	SHA1 checkera;
-	
-	string holding;
-
-	char* c = new char[210 * MB];
-
-	for (int i = 0; i < b.getTotalChunks() - 1; i++)
-	{
-		b.waitForRead();
-		std::memcpy(&c[i*(21 * MB)], b.buffer, 21 * MB);
-		b.asyncReadNextChunk();
-	}
-
-	std::future<string> test = std::async(std::launch::async, [c] { SHA1 checker; checker.update(c); return checker.final(); });
-
-	checkera.update(a.buffer);
-	
-	cout << test.get() << endl;
-	cout << checkera.final() << endl;
-
-	return 0;
-}
+//int test2()
+//{
+//	fileHandler a("TestFile.test", 210 * MB);
+//	fileHandler b("TestFile.test", 21 * MB);
+//
+//	SHA1 checkera;
+//	
+//	string holding;
+//
+//	char* c = new char[210 * MB];
+//
+//	for (int i = 0; i < b.getTotalChunks() - 1; i++)
+//	{
+//		b.waitForRead();
+//		std::memcpy(&c[i*(21 * MB)], b.buffer, 21 * MB);
+//		b.asyncReadNextChunk();
+//	}
+//
+//	std::future<string> test = std::async(std::launch::async, [c] { SHA1 checker; checker.update(c); return checker.final(); });
+//
+//	checkera.update(a.buffer);
+//	
+//	cout << test.get() << endl;
+//	cout << checkera.final() << endl;
+//
+//	return 0;
+//}
 
 int test3()
 {
-	int size = 7;
-	int overlaySize = 2;
+	unsigned int size = 6;
+	unsigned int overlaySize = 2;
 
-	int patternMax = 6;
-	int patternMin = 4;
+	unsigned int patternMax = 6;
+	unsigned int patternMin = 4;
 
 	fileHandler abc("abcz.txt", size, overlaySize);
-	string qwe;
+	ustring qwe;
 
 
-	for (int i = 0; i < abc.getTotalChunks() - 1; i++)
+	for (unsigned long int i = 0; i < abc.getTotalChunks() - 1; i++)
 	{
 		abc.waitForRead();
 		qwe = abc.buffer;
-		cout << qwe.substr(0, size + overlaySize) << endl;
+		cout < qwe.substr(0, size + overlaySize);
+		cout << endl;
 		abc.asyncReadNextChunk();
 	}
 
-	qwe = abc.buffer;
 
 	abc.waitForRead();
+	
+	qwe = abc.buffer;
+
 	if (abc.remainder)
 	{
 		if (abc.remainder + overlaySize >= patternMin)
 		{
-			cout << qwe.substr(0, abc.remainder + overlaySize) << endl;
+			cout < qwe.substr(0, abc.remainder + overlaySize);
+			cout << endl;
 		}
 		else
 		{
@@ -182,7 +183,8 @@ int test3()
 	}
 	else
 	{
-		cout << qwe.substr(0, size + overlaySize) << endl;
+		cout < qwe.substr(0, size + overlaySize);
+		cout << endl;
 	}
 	
 

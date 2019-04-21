@@ -93,10 +93,10 @@ void fileHandler::confirmFileSize()
 
 void fileHandler::resetPointer()
 {
-	//rewind(fileToCarve);
 	ifile.seekg(0, ifile.beg);
 	currChunk = 0;
-	//fread(buffer, chunkSize, 1, fileToCarve);
+	// Haven't decided if we should read here or leave the pointer at file start
+
 	return;
 }
 
@@ -144,11 +144,11 @@ void fileHandler::asyncReadNextChunk(bool firstChunk)
 
 	if (firstChunk)
 	{
-		unsigned long int getLength = chunkSize + overlay;
-		asyncThread = thread(asyncRead, &ifile, buffer, getLength);
+		asyncThread = thread(asyncRead, &ifile, buffer, (chunkSize + overlay));
 	}
 	else
 	{
+		memcpy(buffer, &buffer[chunkSize], overlay); // Copy end of the buffer to the start of the buffer
 		asyncThread = thread(asyncRead, &ifile, &buffer[overlay], chunkSize); // Read after copy
 	}
 
@@ -194,17 +194,16 @@ bool fileHandler::setNewChunkNo(unsigned long int newChunkNo)
 	//if (EXIT_SUCCESS == fseek(fileToCarve, (newChunkNo*chunkSize), SEEK_SET))
 
 	ifile.seekg(newChunkNo*chunkSize);
-	if (std::ifstream::failbit == ifile.rdstate()) // If the seek was not possible
+
+	if (!(std::ifstream::failbit & ifile.rdstate())) // If the seek was not possible
 	{
 		currChunk = newChunkNo;
 		asyncReadNextChunk(true);
 
 	} else { // If the file was not repointed correctly
 		
-		cerr << "FileHandler: There was an issue repointing to position " << newChunkNo <<
-			" the pointer was reset to the start as a result and execution has continued" << endl;
-		resetPointer();
-		return false;
+		cerr << endl << "FileHandler: There was an issue repointing to position " << newChunkNo;
+		exit(6);
 	}
 
 	return true;
