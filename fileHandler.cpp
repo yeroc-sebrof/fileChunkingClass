@@ -12,7 +12,8 @@ fileHandler::fileHandler(string fileNameGiven, fSizeType currChunkSize, unsigned
 	//#pragma warning(suppress : 4996)
 	//fileToCarve = fopen(fileName.c_str(), "rb");
 
-	ifile.open(fileName, std::ios::binary);
+	std::ios_base::sync_with_stdio(false);
+	ifile.open(fileName, std::ios::in | std::ios::binary);
 
 	// Checking the file opened worked before setting buffers in the event an error occurs
 	if (std::ifstream::failbit == ifile.rdstate()) // If file didn't open
@@ -126,10 +127,9 @@ void fileHandler::readNextChunk()
 	return;
 }
 
-void asyncRead(uifstream* fileStream, uchar* buffer, unsigned long int chunkSize)
+void asyncRead(ufstream* fileStream, uchar* buffer, unsigned long int chunkSize)
 {
 	fileStream->read(buffer, chunkSize);
-
 	return;
 }
 

@@ -33,11 +33,11 @@ using std::thread;
 using std::mutex;
 using std::unique_lock;
 
-#define uifstream std::basic_ifstream<unsigned char>
+#define ufstream std::basic_fstream<unsigned char>
 
 class fileHandler
 {
-	uifstream ifile;
+	ufstream ifile;
 
 	//FILE * fileToCarve; // File pointer
 	fSizeType chunkSize;
