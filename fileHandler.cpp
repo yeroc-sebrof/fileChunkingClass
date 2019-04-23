@@ -131,7 +131,7 @@ void fileHandler::asyncReadNextChunk(bool firstChunk)
 	
 	// Start the next read
 	currChunk++;
-	cout << endl << "FileHandler: Chunk No " << currChunk << " Started out of " << totalChunks << endl;
+	//cout << endl << "FileHandler: Chunk No " << currChunk << " Started out of " << totalChunks << endl;
 	if (firstChunk)
 	{
 		asyncThread = thread(fread, buffer, chunkSize + overlay, 1, fileToCarve);
@@ -150,7 +150,7 @@ void fileHandler::waitForRead()
 {
 	if (asyncThread.joinable())
 	{
-		cout << endl << "FileHandler: Waiting for read to complete" << endl;
+		cout << endl << "FileHandler: Waiting for chunk " << currChunk << " to read in" << endl;
 		asyncThread.join();
 		cout << "Done!" << endl;
 	}
