@@ -151,7 +151,9 @@ void fileHandler::waitForRead()
 	if (asyncThread.joinable())
 	{
 		cout << endl << "FileHandler: Waiting for chunk " << currChunk << "/" << totalChunks << " to read in.. ";
+
 		asyncThread.join();
+
 		cout << "Done!" << endl;
 	}
 	
