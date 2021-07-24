@@ -3,7 +3,7 @@
 #define HASHING false
 
 #if HASHING // Using https://github.com/vog/sha1
-#include "..\sha1\sha1.hpp"
+#include "sha1\sha1.hpp"
 #endif
 
 #include <future>
